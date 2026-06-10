@@ -23,3 +23,29 @@ export async function getHome(_req, res) {
   const html = getLayout("Inicio", content);
   sendHtml(res, html);
 }
+
+export async function getNewContact(req, res) {
+  const content = `
+    <section>
+      <h2>Formulario de Contacto</h2>
+      <form action="/contact" method="POST">
+        <div>
+          <label for="name">Nombre:</label>
+          <input type="text" id="name" name="name" required />
+        </div>
+        <div>
+          <label for="email">Correo electrónico:</label>
+          <input type="email" id="email" name="email" required />
+        </div>
+        <div>
+          <label for="message">Mensaje:</label>
+          <textarea id="message" name="message" required></textarea>
+        </div>
+        <button type="submit">Enviar</button>
+      </form>
+    </section>
+  `;
+
+  const html = getLayout("Nuevo Contacto", content);
+  sendHtml(res, html);
+}
