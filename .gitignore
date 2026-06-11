@@ -3,3 +3,7 @@ node_modules/
 
 # OS specific
 .DS_Store
+
+# Data
+data/*
+!data/.gitkeep
