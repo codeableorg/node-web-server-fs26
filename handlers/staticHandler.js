@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { sendHtmlError } from "../utils/response.js";
 
 const mimeTypes = {
   ".svg": "image/svg+xml",
@@ -20,13 +21,16 @@ export async function staticHandler(_req, res, pathname) {
   } catch (error) {
     // Determinar el código de estado basado en el error de sistema
     let status = 500;
+    let message = "Error interno del servidor";
+
     if (error.code === "ENOENT" || error.code === "EISDIR") {
       status = 404;
+      message = "Recurso no encontrado";
     } else if (error.code === "EACCES") {
       status = 403;
+      message = "Acceso prohibido";
     }
 
-    res.writeHead(status);
-    return res.end();
+    return sendHtmlError(res, message, status);
   }
 }

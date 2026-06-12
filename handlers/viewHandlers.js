@@ -1,8 +1,9 @@
-import { sendHtml } from "../utils/response.js";
+import { sendHtml, sendHtmlError } from "../utils/response.js";
 import { getLayout } from "../utils/html.js";
 import { parseUrlEncoded } from "../utils/bodyParser.js";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { HttpError } from "../utils/errors.js";
 
 export async function getHome(_req, res) {
   const content = `
@@ -38,7 +39,7 @@ export async function getNewContact(req, res) {
         </div>
         <div>
           <label for="email">Correo electrónico:</label>
-          <input type="email" id="email" name="email" required />
+          <input type="email" id="email" name="email" />
         </div>
         <div>
           <label for="message">Mensaje:</label>
@@ -58,15 +59,18 @@ const MESSAGES_FILE = path.join(DATA_DIR, "messages.json");
 
 export async function postContact(req, res) {
   // sanitizacion o parseado del body
-  const body = await parseUrlEncoded(req);
-  console.log(body);
+  let body;
+  try {
+    body = await parseUrlEncoded(req);
+  } catch {
+    return sendHtmlError(res, "Error interno del servidor");
+  }
 
   // validacion de los datos
   const { name, email, message } = body;
 
   if (!name || !email || !message) {
-    res.writeHead(400); // 400 Bad Request
-    return res.end();
+    throw new HttpError("Faltan campos requeridos", 400);
   }
 
   // persistencia de datos
