@@ -19,3 +19,7 @@ export function sendHtmlError(res, message, status = 500) {
   const html = getLayout(`Error ${status}`, content);
   sendHtml(res, html, status);
 }
+
+export function sendJsonError(res, message, status = 500) {
+  sendJson(res, { error: message }, status);
+}

@@ -20,6 +20,7 @@ export async function getHome(_req, res) {
       <ul>
         <li><a href="/api/health">/api/health</a></li>
         <li><a href="/api/time">/api/time</a></li>
+        <li><a href="/api/estates">/api/estates</a></li>
       </ul>
     </section>
   `;

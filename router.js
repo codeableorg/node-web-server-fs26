@@ -1,11 +1,11 @@
-import { getHealth, getTime } from "./handlers/apiHandlers.js";
+import { getHealth, getTime, getEstates } from "./handlers/apiHandlers.js";
 import {
   getHome,
   getNewContact,
   postContact,
 } from "./handlers/viewHandlers.js";
 import { staticHandler } from "./handlers/staticHandler.js";
-import { sendHtmlError } from "./utils/response.js";
+import { sendHtmlError, sendJsonError } from "./utils/response.js";
 
 export async function router(req, res) {
   const pathname = req.url;
@@ -20,6 +20,10 @@ export async function router(req, res) {
 
     if (pathname === "/api/time") {
       return await getTime(req, res);
+    }
+
+    if (pathname === "/api/estates") {
+      return await getEstates(req, res);
     }
 
     // Rutas de Vistas
@@ -43,6 +47,10 @@ export async function router(req, res) {
     const message =
       status === 500 ? "Error Interno del Servidor" : error.message;
 
-    sendHtmlError(res, message, status);
+    if (pathname.startsWith("/api")) {
+      sendJsonError(res, message, status);
+    } else {
+      sendHtmlError(res, message, status);
+    }
   }
 }
