@@ -1,5 +1,6 @@
-import { readFile } from "node:fs/promises";
+import fs from "node:fs";
 import path from "node:path";
+import { HttpError } from "../utils/errors.js";
 
 const mimeTypes = {
   ".svg": "image/svg+xml",
@@ -10,26 +11,32 @@ const mimeTypes = {
 const PUBLIC_DIR = path.resolve("public");
 
 export async function staticHandler(_req, res, pathname) {
-  // try {
   const filePath = path.join(PUBLIC_DIR, pathname);
-  const ext = path.extname(pathname).toLowerCase();
-  const data = await readFile(filePath);
 
-  res.writeHead(200, { "Content-Type": mimeTypes[ext] });
-  return res.end(data);
-  // } catch (error) {
-  // Determinar el código de estado basado en el error de sistema
-  //   let status = 500;
-  //   let message = "Error interno del servidor";
+  try {
+    const stats = await fs.promises.stat(filePath);
 
-  //   if (error.code === "ENOENT" || error.code === "EISDIR") {
-  //     status = 404;
-  //     message = "Recurso no encontrado";
-  //   } else if (error.code === "EACCES") {
-  //     status = 403;
-  //     message = "Acceso prohibido";
-  //   }
+    if (!stats.isFile()) {
+      throw new HttpError("Recurso no encontrado", 404);
+    }
 
-  //   return sendHtmlError(res, message, status);
-  // }
+    const ext = path.extname(pathname).toLowerCase();
+    const mimeType = mimeTypes[ext] || "application/octet-stream";
+
+    const readStream = fs.createReadStream(filePath);
+
+    res.writeHead(200, { "Content-Type": mimeType });
+    // readStream.on("error", callback);
+    readStream.pipe(res);
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      throw new HttpError("Recurso no encontrado", 404);
+    }
+
+    if (error.code === "EACCES") {
+      throw new HttpError("Acceso denegado", 403);
+    }
+
+    throw error;
+  }
 }
